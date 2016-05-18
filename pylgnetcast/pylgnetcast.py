@@ -7,8 +7,8 @@ released in 2013 (NetCast 4.0) are supported.
 The client is inspired by the work of
 https://github.com/ubaransel/lgcommander
 """
-from http.client import HTTPConnection
 import logging
+import requests
 from xml.etree import ElementTree
 
 _LOGGER = logging.getLogger(__name__)
@@ -110,7 +110,7 @@ class LgNetCastClient(object):
 
     def __init__(self, host, access_token):
         """Initialize the LG TV client."""
-        self.host = host
+        self.url = 'http://%s:%s/roap/api/' % (host, DEFAULT_PORT)
         self.access_token = access_token
         self.session = None
 
@@ -121,7 +121,7 @@ class LgNetCastClient(object):
         if self.session:
             message = self.COMMAND % (self.session, LG_HANDLE_KEY_INPUT,
                                       '<value>%s</value>' % command)
-            self._send_to_tv(message, 'command')
+            self._send_to_tv('command', message)
 
     def change_channel(self, channel):
         """Send change channel command to the TV."""
@@ -131,16 +131,16 @@ class LgNetCastClient(object):
             message = self.COMMAND % (self.session, LG_HANDLE_CHANNEL_CHANGE,
                                       ElementTree.tostring(channel,
                                                            encoding='unicode'))
-            self._send_to_tv(message, 'command')
+            self._send_to_tv('command', message)
 
     def query_data(self, query):
         """Query status information from the TV."""
         if not self.session:
             self.session = self._get_session_id()
         if self.session:
-            http_response = self._send_to_tv(None, 'data?target=%s' % query)
-            if http_response and http_response.reason == 'OK':
-                data = http_response.read()
+            response = self._send_to_tv('data', payload={'target': query})
+            if response.status_code == requests.codes.ok:
+                data = response.text
                 tree = ElementTree.XML(data)
                 data_list = []
                 for data in tree.iter('data'):
@@ -157,10 +157,10 @@ class LgNetCastClient(object):
             self._display_pair_key()
             return
         message = self.AUTH % ('AuthReq', self.access_token)
-        http_response = self._send_to_tv(message, 'auth')
-        if http_response and http_response.reason != 'OK':
+        response = self._send_to_tv('auth', message)
+        if response.status_code != requests.codes.ok:
             return
-        data = http_response.read()
+        data = response.text
         tree = ElementTree.XML(data)
         session = tree.find('session').text
         if len(session) >= 8:
@@ -168,18 +168,15 @@ class LgNetCastClient(object):
 
     def _display_pair_key(self):
         """Send message to display the pair key on TV screen."""
-        self._send_to_tv(self.KEY, 'auth')
+        self._send_to_tv('auth', self.KEY)
 
-    def _send_to_tv(self, message, message_type):
+    def _send_to_tv(self, message_type, message=None, payload=None):
         """Send message of given type to the tv."""
-        conn = HTTPConnection(self.host, port=DEFAULT_PORT,
-                              timeout=DEFAULT_TIMEOUT)
+        url = '%s%s' % (self.url, message_type)
         if message:
-            _LOGGER.debug('POST message: %s' % message)
-            conn.request('POST', '/roap/api/%s' % message_type, message,
-                         headers=self.HEADER)
+            response = requests.post(url, data=message, headers=self.HEADER,
+                                     timeout=DEFAULT_TIMEOUT)
         else:
-            _LOGGER.debug('POST message: %s' % message)
-            conn.request('GET', '/roap/api/%s' % message_type,
-                         headers=self.HEADER)
-        return conn.getresponse()
+            response = requests.get(url, params=payload, headers=self.HEADER,
+                                    timeout=DEFAULT_TIMEOUT)
+        return response
