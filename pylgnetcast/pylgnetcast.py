@@ -13,90 +13,97 @@ from xml.etree import ElementTree
 
 _LOGGER = logging.getLogger(__name__)
 
-# LG TV remote control commands
-LG_CMD_POWER = 1
-LG_CMD_NUMBER_0 = 2
-LG_CMD_NUMBER_1 = 3
-LG_CMD_NUMBER_2 = 4
-LG_CMD_NUMBER_3 = 5
-LG_CMD_NUMBER_4 = 6
-LG_CMD_NUMBER_5 = 7
-LG_CMD_NUMBER_6 = 8
-LG_CMD_NUMBER_7 = 9
-LG_CMD_NUMBER_8 = 10
-LG_CMD_NUMBER_9 = 11
-LG_CMD_UP = 12
-LG_CMD_DOWN = 13
-LG_CMD_LEFT = 14
-LG_CMD_RIGHT = 15
-LG_CMD_OK = 20
-LG_CMD_HOME_MENU = 21
-LG_CMD_BACK = 23
-LG_CMD_VOLUME_UP = 24
-LG_CMD_VOLUME_DOWN = 25
-LG_CMD_MUTE_TOGGLE = 26
-LG_CMD_CHANNEL_UP = 27
-LG_CMD_CHANNEL_DOWN = 28
-LG_CMD_BLUE = 29
-LG_CMD_GREEN = 30
-LG_CMD_RED = 31
-LG_CMD_YELLOW = 32
-LG_CMD_PLAY = 33
-LG_CMD_PAUSE = 34
-LG_CMD_STOP = 35
-LG_CMD_FAST_FORWARD = 36
-LG_CMD_REWIND = 37
-LG_CMD_SKIP_FORWARD = 38
-LG_CMD_SKIP_BACKWARD = 39
-LG_CMD_RECORD = 40
-LG_CMD_RECORDING_LIST = 41
-LG_CMD_REPEAT = 42
-LG_CMD_LIVE_TV = 43
-LG_CMD_EPG = 44
-LG_CMD_PROGRAM_INFORMATION = 45
-LG_CMD_ASPECT_RATIO = 46
-LG_CMD_EXTERNAL_INPUT = 47
-LG_CMD_PIP_SECONDARY_VIDEO = 48
-LG_CMD_SHOW_SUBTITLE = 49
-LG_CMD_PROGRAM_LIST = 50
-LG_CMD_TELE_TEXT = 51
-LG_CMD_MARK = 52
-LG_CMD_3D_VIDEO = 400
-LG_CMD_3D_LR = 401
-LG_CMD_DASH = 402
-LG_CMD_PREVIOUS_CHANNEL = 403
-LG_CMD_FAVORITE_CHANNEL = 404
-LG_CMD_QUICK_MENU = 405
-LG_CMD_TEXT_OPTION = 406
-LG_CMD_AUDIO_DESCRIPTION = 407
-LG_CMD_ENERGY_SAVING = 409
-LG_CMD_AV_MODE = 410
-LG_CMD_SIMPLINK = 411
-LG_CMD_EXIT = 412
-LG_CMD_RESERVATION_PROGRAM_LIST = 413
-LG_CMD_PIP_CHANNEL_UP = 414
-LG_CMD_PIP_CHANNEL_DOWN = 415
-LG_CMD_SWITCH_VIDEO = 416
-LG_CMD_APPS = 417
+__all__ = ['LgNetCastClient', 'LG_COMMAND', 'LG_QUERY', 'LgNetCastError',
+           'AccessTokenError', 'SessionIdError']
+
+
 # LG TV handler
 LG_HANDLE_KEY_INPUT = 'HandleKeyInput'
 LG_HANDLE_MOUSE_MOVE = 'HandleTouchMove'
 LG_HANDLE_MOUSE_CLICK = 'HandleTouchClick'
 LG_HANDLE_TOUCH_WHEEL = 'HandleTouchWheel'
 LG_HANDLE_CHANNEL_CHANGE = 'HandleChannelChange'
-# LG TV scroll commands
-LG_CMD_SCROLL_UP = 'up'
-LG_CMD_SCROLL_DOWN = 'down'
-# LG TV data queries
-LG_QUERY_CUR_CHANNEL = 'cur_channel'
-LG_QUERY_CHANNEL_LIST = 'channel_list'
-LG_QUERY_CONTEXT_UI = 'context_ui'
-LG_QUERY_VOLUME_INFO = 'volume_info'
-LG_QUERY_SCREEN_IMAGE = 'screen_image'
-LG_QUERY_3D = 'is_3d'
 
 DEFAULT_PORT = 8080
 DEFAULT_TIMEOUT = 3
+
+
+class LG_COMMAND(object):
+    """LG TV remote control commands."""
+    POWER = 1
+    NUMBER_0 = 2
+    NUMBER_1 = 3
+    NUMBER_2 = 4
+    NUMBER_3 = 5
+    NUMBER_4 = 6
+    NUMBER_5 = 7
+    NUMBER_6 = 8
+    NUMBER_7 = 9
+    NUMBER_8 = 10
+    NUMBER_9 = 11
+    UP = 12
+    DOWN = 13
+    LEFT = 14
+    RIGHT = 15
+    OK = 20
+    HOME_MENU = 21
+    BACK = 23
+    VOLUME_UP = 24
+    VOLUME_DOWN = 25
+    MUTE_TOGGLE = 26
+    CHANNEL_UP = 27
+    CHANNEL_DOWN = 28
+    BLUE = 29
+    GREEN = 30
+    RED = 31
+    YELLOW = 32
+    PLAY = 33
+    PAUSE = 34
+    STOP = 35
+    FAST_FORWARD = 36
+    REWIND = 37
+    SKIP_FORWARD = 38
+    SKIP_BACKWARD = 39
+    RECORD = 40
+    RECORDING_LIST = 41
+    REPEAT = 42
+    LIVE_TV = 43
+    EPG = 44
+    PROGRAM_INFORMATION = 45
+    ASPECT_RATIO = 46
+    EXTERNAL_INPUT = 47
+    PIP_SECONDARY_VIDEO = 48
+    SHOW_SUBTITLE = 49
+    PROGRAM_LIST = 50
+    TELE_TEXT = 51
+    MARK = 52
+    VIDEO_3D = 400
+    LR_3D = 401
+    DASH = 402
+    PREVIOUS_CHANNEL = 403
+    FAVORITE_CHANNEL = 404
+    QUICK_MENU = 405
+    TEXT_OPTION = 406
+    AUDIO_DESCRIPTION = 407
+    ENERGY_SAVING = 409
+    AV_MODE = 410
+    SIMPLINK = 411
+    EXIT = 412
+    RESERVATION_PROGRAM_LIST = 413
+    PIP_CHANNEL_UP = 414
+    PIP_CHANNEL_DOWN = 415
+    SWITCH_VIDEO = 416
+    APPS = 417
+
+
+class LG_QUERY(object):
+    """LG TV data queries."""
+    CUR_CHANNEL = 'cur_channel'
+    CHANNEL_LIST = 'channel_list'
+    CONTEXT_UI = 'context_ui'
+    VOLUME_INFO = 'volume_info'
+    SCREEN_IMAGE = 'screen_image'
+    IS_3D = 'is_3d'
 
 
 class LgNetCastClient(object):
@@ -112,40 +119,40 @@ class LgNetCastClient(object):
         """Initialize the LG TV client."""
         self.url = 'http://%s:%s/roap/api/' % (host, DEFAULT_PORT)
         self.access_token = access_token
-        self.session = None
+        self._session = None
+
+    def __enter__(self):
+        """Context manager method to support with statement."""
+        self._session = self._get_session_id()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager method to support with statement."""
+        self._session = None
 
     def send_command(self, command):
         """Send remote control commands to the TV."""
-        if not self.session:
-            self.session = self._get_session_id()
-        if self.session:
-            message = self.COMMAND % (self.session, LG_HANDLE_KEY_INPUT,
-                                      '<value>%s</value>' % command)
-            self._send_to_tv('command', message)
+        message = self.COMMAND % (self._session, LG_HANDLE_KEY_INPUT,
+                                  '<value>%s</value>' % command)
+        self._send_to_tv('command', message)
 
     def change_channel(self, channel):
         """Send change channel command to the TV."""
-        if not self.session:
-            self.session = self._get_session_id()
-        if self.session:
-            message = self.COMMAND % (self.session, LG_HANDLE_CHANNEL_CHANGE,
-                                      ElementTree.tostring(channel,
-                                                           encoding='unicode'))
-            self._send_to_tv('command', message)
+        message = self.COMMAND % (self._session, LG_HANDLE_CHANNEL_CHANGE,
+                                  ElementTree.tostring(channel,
+                                                       encoding='unicode'))
+        self._send_to_tv('command', message)
 
     def query_data(self, query):
         """Query status information from the TV."""
-        if not self.session:
-            self.session = self._get_session_id()
-        if self.session:
-            response = self._send_to_tv('data', payload={'target': query})
-            if response.status_code == requests.codes.ok:
-                data = response.text
-                tree = ElementTree.XML(data)
-                data_list = []
-                for data in tree.iter('data'):
-                    data_list.append(data)
-                return data_list
+        response = self._send_to_tv('data', payload={'target': query})
+        if response.status_code == requests.codes.ok:
+            data = response.text
+            tree = ElementTree.XML(data)
+            data_list = []
+            for data in tree.iter('data'):
+                data_list.append(data)
+            return data_list
 
     def _get_session_id(self):
         """Get the session key for the TV connection.
@@ -155,16 +162,18 @@ class LgNetCastClient(object):
         """
         if not self.access_token:
             self._display_pair_key()
-            return
+            raise AccessTokenError('No access token specified to create session.')
         message = self.AUTH % ('AuthReq', self.access_token)
         response = self._send_to_tv('auth', message)
         if response.status_code != requests.codes.ok:
-            return
+            raise SessionIdError('Can not get session id from TV.')
         data = response.text
         tree = ElementTree.XML(data)
         session = tree.find('session').text
         if len(session) >= 8:
             return session
+        else:
+            raise SessionIdError('Can not get session id from TV.')
 
     def _display_pair_key(self):
         """Send message to display the pair key on TV screen."""
@@ -180,3 +189,15 @@ class LgNetCastClient(object):
             response = requests.get(url, params=payload, headers=self.HEADER,
                                     timeout=DEFAULT_TIMEOUT)
         return response
+
+
+class LgNetCastError(Exception):
+    """Base class for all exceptions in this module."""
+
+
+class AccessTokenError(LgNetCastError):
+    """No access token specified to create session."""
+
+
+class SessionIdError(LgNetCastError):
+    """No session id could be retrieved from TV."""
