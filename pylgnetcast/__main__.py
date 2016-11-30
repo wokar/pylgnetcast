@@ -19,6 +19,9 @@ def main():
                         help='Address of the TV')
     parser.add_argument('--pairing_key', metavar='pairing_key', type=str,
                         help='Pairing key to access the TV')
+    parser.add_argument('--protocol', metavar='protocol', type=str,
+                        default='roap',
+                        help='LG TV protocol hdcp or roap')
     parser.add_argument('--command', metavar='command', type=int,
                         help='Remote control command to send to the TV')
     parser.add_argument('--verbose', dest='verbose', action='store_const',
@@ -30,7 +33,8 @@ def main():
         logging.basicConfig(level=logging.DEBUG)
 
     try:
-        with LgNetCastClient(args.host, args.pairing_key) as client:
+        with LgNetCastClient(args.host, args.pairing_key,
+                             args.protocol) as client:
             if args.command:
                 client.send_command(args.command)
                 print('Sent command %s' % args.command)
@@ -40,11 +44,14 @@ def main():
                      'Context Info': LG_QUERY.CONTEXT_UI,
                      'Is 3D': LG_QUERY.IS_3D}
             for title, query in infos.items():
-                data = client.query_data(query)
-                if data:
-                    print('%s: %s' %
-                          (title,
-                           ElementTree.tostring(data[0], encoding='unicode')))
+                try:
+                    data = client.query_data(query)
+                    if data:
+                        print('%s: %s' %
+                              (title, ElementTree.tostring(data[0],
+                                                           encoding='unicode')))
+                except Exception as error:
+                    'Can not retrieve %s - error: %s' % (title.lower(), error)
     except AccessTokenError:
         print('Access token is displayed on TV - '
               'use it for the --pairing_key parameter to connect to your TV.')

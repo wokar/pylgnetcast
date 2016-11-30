@@ -3,6 +3,7 @@ Client library for the LG Smart TV running NetCast 3 or 4.
 
 LG Smart TV models released in 2012 (NetCast 3.0) and LG Smart TV models
 released in 2013 (NetCast 4.0) are supported.
+For pre 2012 LG TV remote commands are supported by the "hdcp" protocol.
 
 The client is inspired by the work of
 https://github.com/ubaransel/lgcommander
@@ -106,8 +107,14 @@ class LG_QUERY(object):
     IS_3D = 'is_3d'
 
 
+class LG_PROTOCOL(object):
+    """Supported LG TV protcols."""
+    HDCP = 'hdcp'
+    ROAP = 'roap'
+
+
 class LgNetCastClient(object):
-    """LG NetCast TV client using the ROAP protocol."""
+    """LG NetCast TV client using the ROAP or HDCP protocol."""
 
     HEADER = {'Content-Type': 'application/atom+xml'}
     XML = '<?xml version=\"1.0\" encoding=\"utf-8\"?>'
@@ -115,10 +122,11 @@ class LgNetCastClient(object):
     AUTH = XML + '<auth><type>%s</type><value>%s</value></auth>'
     COMMAND = XML + '<command><session>%s</session><type>%s</type>%s</command>'
 
-    def __init__(self, host, access_token):
+    def __init__(self, host, access_token, protocol=LG_PROTOCOL.ROAP):
         """Initialize the LG TV client."""
-        self.url = 'http://%s:%s/roap/api/' % (host, DEFAULT_PORT)
+        self.url = 'http://%s:%s/%s/api/' % (host, DEFAULT_PORT, protocol)
         self.access_token = access_token
+        self.protocol = protocol
         self._session = None
 
     def __enter__(self):
@@ -162,7 +170,8 @@ class LgNetCastClient(object):
         """
         if not self.access_token:
             self._display_pair_key()
-            raise AccessTokenError('No access token specified to create session.')
+            raise AccessTokenError(
+                'No access token specified to create session.')
         message = self.AUTH % ('AuthReq', self.access_token)
         response = self._send_to_tv('auth', message)
         if response.status_code != requests.codes.ok:
@@ -181,6 +190,8 @@ class LgNetCastClient(object):
 
     def _send_to_tv(self, message_type, message=None, payload=None):
         """Send message of given type to the tv."""
+        if message_type != 'command' and self.protocol == LG_PROTOCOL.HDCP:
+            message_type = 'dtv_wifirc'
         url = '%s%s' % (self.url, message_type)
         if message:
             response = requests.post(url, data=message, headers=self.HEADER,
