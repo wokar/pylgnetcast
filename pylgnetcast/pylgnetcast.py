@@ -179,10 +179,7 @@ class LgNetCastClient(object):
         data = response.text
         tree = ElementTree.XML(data)
         session = tree.find('session').text
-        if len(session) >= 8:
-            return session
-        else:
-            raise SessionIdError('Can not get session id from TV.')
+        return session
 
     def _display_pair_key(self):
         """Send message to display the pair key on TV screen."""
