@@ -148,7 +148,7 @@ class LgNetCastClient(object):
         """Send change channel command to the TV."""
         message = self.COMMAND % (self._session, LG_HANDLE_CHANNEL_CHANGE,
                                   ElementTree.tostring(channel,
-                                                       encoding='unicode'))
+                                                       encoding='utf-8'))
         self._send_to_tv('command', message)
 
     def query_data(self, query):
@@ -156,7 +156,7 @@ class LgNetCastClient(object):
         response = self._send_to_tv('data', payload={'target': query})
         if response.status_code == requests.codes.ok:
             data = response.text
-            tree = ElementTree.XML(data)
+            tree = ElementTree.fromstring(data.encode('utf-8'))
             data_list = []
             for data in tree.iter('data'):
                 data_list.append(data)
